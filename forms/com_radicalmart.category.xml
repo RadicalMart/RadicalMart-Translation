@@ -1,16 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <form addfieldprefix="Joomla\Component\RadicalMart\Administrator\Field">
 	<fieldset name="translation_{language_code}" tab="translation"
-			  label="{language_title"
+			  label="{language_title_image}"
+			  class="{language_display_class}"
 			  full_width="true">
-		<fields name="plugins">
-			<fields name="translation">
-				<fields name="{language_code}">
-					<field name="title" type="text"
-						   label="JGLOBAL_TITLE"
-						   maxlength="255"/>
-				</fields>
-			</fields>
+		<fields name="plugins.translation.{language_code}">
+			<field name="title" type="text"
+				   label="JGLOBAL_TITLE"
+				   maxlength="255"/>
+			<field name="introtext" type="editor"
+				   label="COM_RADICALMART_CATEGORY_INTROTEXT"
+				   filter="\Joomla\CMS\Component\ComponentHelper::filterText"
+				   height="250"
+				   rows="10"
+				   syntax="php"
+				   buttons="false"/>
+			<field name="fulltext" type="editor"
+				   label="COM_RADICALMART_CATEGORY_FULLTEXT"
+				   filter="\Joomla\CMS\Component\ComponentHelper::filterText"
+				   height="300"
+				   rows="15"
+				   syntax="php"
+				   buttons="true"/>
+			<field name="seo_category_title" type="text"
+				   label="COM_RADICALMART_PARAMS_SEO_TITLE"
+				   hint="COM_RADICALMART_PARAMS_CATEGORIES_SEO_CATEGORY_TITLE_HINT"
+				   item_type="category"
+				   view="category"/>
+			<field name="seo_category_description" type="textarea"
+				   label="COM_RADICALMART_PARAMS_SEO_DESCRIPTION"
+				   hint="COM_RADICALMART_PARAMS_CATEGORIES_SEO_CATEGORY_DESCRIPTION_HINT"
+				   item_type="category"
+				   view="category"
+				   rows="3"
+				   cols="30"/>
+			<field name="seo_category_h1" type="text"
+				   label="COM_RADICALMART_PARAMS_SEO_H1"
+				   hint="COM_RADICALMART_PARAMS_CATEGORIES_SEO_CATEGORY_H1_HINT"
+				   item_type="category"
+				   view="category"/>
 		</fields>
 	</fieldset>
 </form>

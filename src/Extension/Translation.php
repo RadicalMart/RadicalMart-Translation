@@ -16,9 +16,11 @@ namespace Joomla\Plugin\RadicalMart\Translation\Extension;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\Form\FormFactoryInterface;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\LanguageHelper;
 use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\Component\RadicalMart\Administrator\Helper\LanguagesHelper;
 use Joomla\Component\RadicalMart\Administrator\Helper\PluginsHelper;
 use Joomla\Component\RadicalMart\Administrator\View\FormView;
 use Joomla\Database\DatabaseAwareTrait;
@@ -120,11 +122,29 @@ class Translation extends CMSPlugin implements SubscriberInterface
 
 		$translateForm = $translateForm->getXml()->asXML();
 
-		$languages = LanguageHelper::getContentLanguages();
+		$languages   = LanguageHelper::getContentLanguages();
+		$default     = LanguagesHelper::getDefaultTag('site');
+		$empty_image = HTMLHelper::image('empty/empty', '', relative: true);
 		foreach ($languages as $language)
 		{
+			$image = HTMLHelper::image('mod_languages/' . $language->image . '.gif', '', relative: true);
+
+			$title        = htmlspecialchars($language->title);
+			$title_image  = $title;
+			$image_render = '';
+			if ($image !== $empty_image)
+			{
+				$image_render = htmlspecialchars($image);
+				$title_image  = htmlspecialchars($image . ' ' . $language->title);
+			}
+
+			$display_class = ($language->lang_code === $default) ? 'd-none hide' : '';
+
 			$xml = str_replace('{language_code}', $language->lang_code, $translateForm);
-			$xml = str_replace('{language_title', $language->lang_title, $xml);
+			$xml = str_replace('{language_title}', $title, $xml);
+			$xml = str_replace('{language_title_image}', $title_image, $xml);
+			$xml = str_replace('{language_image_render}', $image_render, $xml);
+			$xml = str_replace('{language_display_class}', $display_class, $xml);
 
 			$form->load($xml);
 		}
@@ -140,15 +160,51 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @since __DEPLOY_VERSION__
 	 */
-	public function onRadicalMartPrepareViewTabs(array $tabs, FormView $view): void
+	public function onRadicalMartPrepareViewTabs(array &$tabs, FormView $view): void
 	{
+		$context = $view->getContext();
+		$form    = $view->getForm();
+		if (!$form)
+		{
+			return;
+		}
 
-		echo '<pre>', print_r($view->getContext(), true), '</pre>';
-		exit('332313213');
+		if ($context === 'com_radicalmart.category')
+		{
+			$this->addTranslationTab($tabs, $form);
+		}
 	}
 
-	protected function addTranslationTab(array $tabs)
+	/**
+	 * Method to add translation tab to form.
+	 *
+	 * @param   array  $tabs  Current tabs array.
+	 * @param   Form   $form  Current form object.
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected function addTranslationTab(array &$tabs, Form $form): void
 	{
+		$fieldsets = [];
+		foreach ($form->getFieldsets() as $fieldset)
+		{
+			if (!str_starts_with($fieldset->name, 'translation_'))
+			{
+				continue;
+			}
+			$fieldsets[] = $fieldset->name;
+		}
 
+		if (count($fieldsets) === 0)
+		{
+			return;
+		}
+
+		$tabs['translation'] = [
+			'title'      => 'PLG_RADICALMART_TRANSLATION_TAB',
+			'fieldsets'  => $fieldsets,
+			'full_width' => true,
+			'ordering'   => 103,
+		];
 	}
 }
