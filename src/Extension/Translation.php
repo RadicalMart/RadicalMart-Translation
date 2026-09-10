@@ -26,6 +26,7 @@ use Joomla\Component\RadicalMart\Administrator\View\FormView;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Filesystem\Path;
+use Joomla\Registry\Registry;
 
 class Translation extends CMSPlugin implements SubscriberInterface
 {
@@ -51,8 +52,9 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	public static function getSubscribedEvents(): array
 	{
 		return [
-			'onRadicalMartPrepareForm'     => 'onRadicalMartPrepareForm',
-			'onRadicalMartPrepareViewTabs' => 'onRadicalMartPrepareViewTabs',
+			'onRadicalMartPrepareForm'          => 'onRadicalMartPrepareForm',
+			'onRadicalMartPrepareViewTabs'      => 'onRadicalMartPrepareViewTabs',
+			'onRadicalMartNormaliseRequestData' => 'onRadicalMartNormaliseRequestData',
 		];
 	}
 
@@ -206,5 +208,81 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			'full_width' => true,
 			'ordering'   => 103,
 		];
+	}
+
+
+	/**
+	 * Method to set default language data on save.
+	 *
+	 * @param   string        $context  The execution context.
+	 * @param   object|null  &$objData  Reference to the form data object.
+	 * @param   Form|null     $form     The form object, if available.
+	 *
+	 * @throws \Exception
+	 * @since  __DEPLOY_VERSION__
+	 */
+	public function onRadicalMartNormaliseRequestData(string $context, ?object $objData, ?Form $form): void
+	{
+		if ($context === 'com_radicalmart.category')
+		{
+			$this->setDefaultData($objData);
+		}
+	}
+
+	/**
+	 * Method to set data to default language.
+	 *
+	 * @param   object  $object  Reference to the form data object.
+	 *
+	 * @throws \Exception
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected function setDefaultData(object $object): void
+	{
+		if (empty($object->plugins['translation']))
+		{
+			return;
+		}
+
+		$default = LanguagesHelper::getDefaultTag('site');
+		if (!isset($object->plugins['translation'][$default]))
+		{
+			return;
+		}
+		$fields   = $object->plugins['translation'][$default];
+		$registry = new Registry($object);
+
+		$object->plugins['translation'][$default] = $this->recursiveGetDefaultTranslationData($fields, $registry);
+	}
+
+	/**
+	 * Method to recursive prepare default translation data.
+	 *
+	 * @param   array     $fields    Translation fields array.
+	 * @param   Registry  $registry  Parent object as Registry.
+	 * @param   string    $parent    Parent key for path.
+	 * @param   array     $result    Reu
+	 *
+	 * @return array __DEPLOY_VERSION__
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected function recursiveGetDefaultTranslationData(array $fields, Registry $registry, string $parent = '', array $result = []): array
+	{
+		foreach ($fields as $key => $datum)
+		{
+			$path = (!empty($parent)) ? $parent . '.' . $key : $key;
+			if (is_array($datum))
+			{
+				$result[$path] = $this->recursiveGetDefaultTranslationData($datum, $registry, $path, $result);
+			}
+			else
+			{
+				$result[$path] = $registry->get($path, '');
+			}
+		}
+
+		return $result;
 	}
 }
