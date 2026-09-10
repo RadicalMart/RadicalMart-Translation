@@ -55,6 +55,8 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			'onRadicalMartPrepareForm'          => 'onRadicalMartPrepareForm',
 			'onRadicalMartPrepareViewTabs'      => 'onRadicalMartPrepareViewTabs',
 			'onRadicalMartNormaliseRequestData' => 'onRadicalMartNormaliseRequestData',
+
+			'onRadicalMartGetItemCategory' => 'onRadicalMartGetItemCategory',
 		];
 	}
 
@@ -284,5 +286,19 @@ class Translation extends CMSPlugin implements SubscriberInterface
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Method to set category item translation data.
+	 *
+	 * @param   string       $context   Context selector string.
+	 * @param   object      &$data      Reference to the category item object.
+	 * @param   array|bool   $currency  Currency data array, or false.
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	public function onRadicalMartGetItemCategory(string $context, object $data, bool|array $currency): void
+	{
+		exit('onRadicalMartGetItemCategory');
 	}
 }
