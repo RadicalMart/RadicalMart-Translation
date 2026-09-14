@@ -303,7 +303,6 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	{
 		$this->translateItem($data, $data->plugins->get('translation', []));
 
-		echo '<pre>', print_r($data->plugins, true), '</pre>';
 	}
 
 	/**
