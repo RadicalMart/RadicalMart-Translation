@@ -56,8 +56,10 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			'onRadicalMartPrepareViewTabs'      => 'onRadicalMartPrepareViewTabs',
 			'onRadicalMartNormaliseRequestData' => 'onRadicalMartNormaliseRequestData',
 
-			'onRadicalMartGetItemCategory' => 'onRadicalMartGetItemCategory',
-			'onRadicalMartGetListCategory' => 'onRadicalMartGetListCategory',
+			'onRadicalMartGetItemCategory' => 'onRadicalMartGetItem',
+			'onRadicalMartGetListCategory' => 'onRadicalMartGetListItem',
+			'onRadicalMartGetItemProduct'  => 'onRadicalMartGetItem',
+			'onRadicalMartGetListProduct'  => 'onRadicalMartGetListItem',
 		];
 	}
 
@@ -79,6 +81,10 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			if ($formName === 'com_radicalmart.category')
 			{
 				$this->loadTranslateForm($form, 'com_radicalmart.category', $data);
+			}
+			elseif ($formName === 'com_radicalmart.product')
+			{
+				$this->loadTranslateForm($form, 'com_radicalmart.product', $data);
 			}
 		}
 		catch (\Throwable $e)
@@ -175,6 +181,10 @@ class Translation extends CMSPlugin implements SubscriberInterface
 		}
 
 		if ($context === 'com_radicalmart.category')
+		{
+			$this->addTranslationTab($tabs, $form);
+		}
+		elseif ($context === 'com_radicalmart.product')
 		{
 			$this->addTranslationTab($tabs, $form);
 		}
@@ -290,7 +300,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	}
 
 	/**
-	 * Method to set category item translation data.
+	 * Method to set product and category item translation data.
 	 *
 	 * @param   string       $context   Context selector string.
 	 * @param   object      &$data      Reference to the category item object.
@@ -300,13 +310,13 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @since __DEPLOY_VERSION__
 	 */
-	public function onRadicalMartGetItemCategory(string $context, object $data, bool|array $currency): void
+	public function onRadicalMartGetItem(string $context, object $data, bool|array $currency): void
 	{
 		$this->translateItem($data, $data->plugins->get('translation', []));
 	}
 
 	/**
-	 * Method to set category item translation data.
+	 * Method to set product and category list item translation data.
 	 *
 	 * @param   string       $context   Context selector string.
 	 * @param   object      &$item      Reference to the category item object.
@@ -316,7 +326,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @since __DEPLOY_VERSION__
 	 */
-	public function onRadicalMartGetListCategory(string $context, object $item, bool|array $currency): void
+	public function onRadicalMartGetListItem(string $context, object $item, bool|array $currency): void
 	{
 		$this->translateItem($item, $item->plugins->get('translation', []));
 	}

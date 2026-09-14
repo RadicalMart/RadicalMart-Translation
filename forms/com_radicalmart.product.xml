@@ -9,29 +9,30 @@
 				<fields name="{language_code}">
 					<field name="title" type="text"
 						   label="JGLOBAL_TITLE"
+						   class="input-xxlarge input-large-text"
 						   maxlength="255"/>
 					<field name="introtext" type="editor"
-						   label="COM_RADICALMART_CATEGORY_INTROTEXT"
+						   label="COM_RADICALMART_INTROTEXT"
 						   filter="\Joomla\CMS\Component\ComponentHelper::filterText"
 						   height="250"
 						   rows="10"
 						   syntax="php"
 						   buttons="false"/>
 					<field name="fulltext" type="editor"
-						   label="COM_RADICALMART_CATEGORY_FULLTEXT"
+						   label="COM_RADICALMART_FULLTEXT"
 						   filter="\Joomla\CMS\Component\ComponentHelper::filterText"
 						   height="300"
 						   rows="15"
 						   syntax="php"
 						   buttons="true"/>
 					<fields name="params">
-						<field name="seo_category_title" type="text"
+						<field name="seo_product_title" type="text"
 							   label="COM_RADICALMART_PARAMS_SEO_TITLE"/>
-						<field name="seo_category_description" type="textarea"
+						<field name="seo_product_description" type="textarea"
 							   label="COM_RADICALMART_PARAMS_SEO_DESCRIPTION"
 							   rows="3"
 							   cols="30"/>
-						<field name="seo_category_h1" type="text"
+						<field name="seo_product_h1" type="text"
 							   label="COM_RADICALMART_PARAMS_SEO_H1"/>
 					</fields>
 				</fields>
