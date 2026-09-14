@@ -295,10 +295,113 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 * @param   object      &$data      Reference to the category item object.
 	 * @param   array|bool   $currency  Currency data array, or false.
 	 *
+	 * @throws \Exception
+	 *
 	 * @since __DEPLOY_VERSION__
 	 */
 	public function onRadicalMartGetItemCategory(string $context, object $data, bool|array $currency): void
 	{
-		exit('onRadicalMartGetItemCategory');
+		$this->translateItem($data, $data->plugins->get('translation', []));
+
+		echo '<pre>', print_r($data->plugins, true), '</pre>';
+	}
+
+	/**
+	 * Method to translate item.
+	 *
+	 * @param   object|array  $source
+	 * @param   mixed         $translation
+	 *
+	 * @throws \Exception
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected function translateItem(object|array &$source, mixed $translation = []): void
+	{
+		$language = $this->getApplication()->getLanguage()->getTag();
+		if ($language === LanguagesHelper::getDefaultTag('site'))
+		{
+			return;
+		}
+
+		if (!is_array($translation))
+		{
+			$translation = (new Registry($translation))->toArray();
+		}
+
+		if (empty($translation[$language]))
+		{
+			return;
+		}
+
+		$source = $this->recursiveSetItemValue($source, $translation[$language]);
+	}
+
+	/**
+	 * Method to recursive set item value.
+	 *
+	 * @param   mixed  $source       Source data.
+	 * @param   mixed  $translation  Translation data.
+	 *
+	 * @return mixed Changed data.
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected function recursiveSetItemValue(mixed $source, mixed $translation): mixed
+	{
+		if ($translation === '' || $translation === [])
+		{
+			return $source;
+		}
+
+		if (!is_array($translation))
+		{
+			return (is_array($source) || is_object($source)) ? $source : $translation;
+		}
+
+		if ($source === null)
+		{
+			$source = [];
+		}
+		elseif (!is_array($source) && !is_object($source))
+		{
+			return $source;
+		}
+
+		$arrayAccess = is_array($source) || $source instanceof \ArrayAccess;
+		foreach ($translation as $key => $value)
+		{
+			if ($value === '' || $value === [])
+			{
+				continue;
+			}
+
+			$current = null;
+			if ($arrayAccess && isset($source[$key]))
+			{
+				$current = $source[$key];
+			}
+			elseif (!$arrayAccess && isset($source->{$key}))
+			{
+				$current = $source->{$key};
+			}
+
+			$current = $this->recursiveSetItemValue($current, $value);
+			if ($current === '' || $current === [])
+			{
+				continue;
+			}
+
+			if ($arrayAccess)
+			{
+				$source[$key] = $current;
+			}
+			else
+			{
+				$source->{$key} = $current;
+			}
+		}
+
+		return $source;
 	}
 }
