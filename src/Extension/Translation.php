@@ -57,6 +57,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			'onRadicalMartNormaliseRequestData' => 'onRadicalMartNormaliseRequestData',
 
 			'onRadicalMartGetItemCategory' => 'onRadicalMartGetItemCategory',
+			'onRadicalMartGetListCategory' => 'onRadicalMartGetListCategory',
 		];
 	}
 
@@ -302,7 +303,22 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	public function onRadicalMartGetItemCategory(string $context, object $data, bool|array $currency): void
 	{
 		$this->translateItem($data, $data->plugins->get('translation', []));
+	}
 
+	/**
+	 * Method to set category item translation data.
+	 *
+	 * @param   string       $context   Context selector string.
+	 * @param   object      &$item      Reference to the category item object.
+	 * @param   array|bool   $currency  Currency data array, or false.
+	 *
+	 * @throws \Exception
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	public function onRadicalMartGetListCategory(string $context, object $item, bool|array $currency): void
+	{
+		$this->translateItem($item, $item->plugins->get('translation', []));
 	}
 
 	/**
@@ -317,6 +333,25 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 */
 	protected function translateItem(object|array &$source, mixed $translation = []): void
 	{
+		$is_array = (is_array($source) || $source instanceof \ArrayAccess);
+		if ($is_array && !empty($source['is_translation']))
+		{
+			return;
+		}
+		elseif (!$is_array && !empty($source->is_translation))
+		{
+			return;
+		}
+
+		if ($is_array)
+		{
+			$source['is_translation'] = true;
+		}
+		else
+		{
+			$source->is_translation = true;
+		}
+
 		$language = $this->getApplication()->getLanguage()->getTag();
 		if ($language === LanguagesHelper::getDefaultTag('site'))
 		{
@@ -367,7 +402,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			return $source;
 		}
 
-		$arrayAccess = is_array($source) || $source instanceof \ArrayAccess;
+		$is_array = (is_array($source) || $source instanceof \ArrayAccess);
 		foreach ($translation as $key => $value)
 		{
 			if ($value === '' || $value === [])
@@ -376,11 +411,11 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			}
 
 			$current = null;
-			if ($arrayAccess && isset($source[$key]))
+			if ($is_array && isset($source[$key]))
 			{
 				$current = $source[$key];
 			}
-			elseif (!$arrayAccess && isset($source->{$key}))
+			elseif (!$is_array && isset($source->{$key}))
 			{
 				$current = $source->{$key};
 			}
@@ -391,7 +426,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 				continue;
 			}
 
-			if ($arrayAccess)
+			if ($is_array)
 			{
 				$source[$key] = $current;
 			}
