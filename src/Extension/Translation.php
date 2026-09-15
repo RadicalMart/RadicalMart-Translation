@@ -56,9 +56,9 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			'onRadicalMartPrepareViewTabs'      => 'onRadicalMartPrepareViewTabs',
 			'onRadicalMartNormaliseRequestData' => 'onRadicalMartNormaliseRequestData',
 
-			'onRadicalMartGetItemCategory' => 'onRadicalMartGetItem',
+			'onRadicalMartGetItemCategory' => 'onRadicalMartGetItemCategory',
 			'onRadicalMartGetListCategory' => 'onRadicalMartGetListItem',
-			'onRadicalMartGetItemProduct'  => 'onRadicalMartGetItem',
+			'onRadicalMartGetItemProduct'  => 'onRadicalMartGetItemProduct',
 			'onRadicalMartGetListProduct'  => 'onRadicalMartGetListItem',
 		];
 	}
@@ -351,7 +351,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	}
 
 	/**
-	 * Method to set product and category item translation data.
+	 * Method to set category item translation data.
 	 *
 	 * @param   string       $context   Context selector string.
 	 * @param   object      &$data      Reference to the category item object.
@@ -361,9 +361,68 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @since __DEPLOY_VERSION__
 	 */
-	public function onRadicalMartGetItem(string $context, object $data, bool|array $currency): void
+	public function onRadicalMartGetItemCategory(string $context, object $data, bool|array $currency): void
 	{
 		$this->translateItem($data, $data->plugins->get('translation', []));
+	}
+
+	/**
+	 * Method to set product item translation data.
+	 *
+	 * @param   string       $context   Context selector string.
+	 * @param   object      &$data      Reference to the category item object.
+	 * @param   array|bool   $currency  Currency data array, or false.
+	 *
+	 * @throws \Exception
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	public function onRadicalMartGetItemProduct(string $context, object $data, bool|array $currency): void
+	{
+		$this->translateItem($data, $data->plugins->get('translation', []));
+
+		if (!empty($data->fieldsets))
+		{
+			$current = $this->getApplication()->getLanguage()->getTag();
+			foreach ($data->fieldsets as $fieldset)
+			{
+				if (!empty($fieldset->is_translation))
+				{
+					break;
+				}
+
+				$this->translateItem($fieldset, $fieldset->plugins->get('translation', []));
+
+				foreach ($fieldset->fields as $filed_key => $field)
+				{
+					if (!empty($field->is_translation))
+					{
+						break;
+					}
+
+					$this->translateItem($field, $field->plugins->get('translation', []));
+					if ($field->plugin === 'standard')
+					{
+						$type = $field->params->get('type');
+						if ($type === 'list' || $type === 'checkboxes')
+						{
+							if (!empty($field->options) && is_array($field->options)
+								&& !empty($field->options[$field->rawvalue]))
+							{
+								$text_value = (new Registry($field->options[$field->rawvalue]))
+									->get('plugins.translation.' . $current . '.text');
+								if (!empty($text_value))
+								{
+									$field->value = $text_value;
+								}
+							}
+						}
+					}
+
+					$data->filds[$filed_key] = $field;
+				}
+			}
+		}
 	}
 
 	/**
