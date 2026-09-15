@@ -78,13 +78,31 @@ class Translation extends CMSPlugin implements SubscriberInterface
 		try
 		{
 			$formName = $form->getName();
-			if ($formName === 'com_radicalmart.category')
+			$forms    = ['com_radicalmart.category', 'com_radicalmart.product', 'com_radicalmart.fieldset',
+				'com_radicalmart.field'];
+			if (in_array($formName, $forms))
 			{
-				$this->loadTranslateForm($form, 'com_radicalmart.category', $data);
+				$this->loadTranslateForm($form, $formName, $data);
 			}
-			elseif ($formName === 'com_radicalmart.product')
+
+			if ($formName === 'com_radicalmart.field')
 			{
-				$this->loadTranslateForm($form, 'com_radicalmart.product', $data);
+				$field = $form->getField('options');
+				if ($field && $field->getAttribute('type') === 'subform')
+				{
+					/** @var Form $subform */
+					$subform = Factory::getContainer()->get(FormFactoryInterface::class)
+						->createForm($formName . '.options', ['control' => null, 'load_data' => false]);
+					$subform->load($field->formsource);
+
+					$field = new \SimpleXMLElement('<field/>');
+					$field->addAttribute('type', 'note');
+					$field->addAttribute('name', 'translation_note');
+					$field->addAttribute('label', 'LABLE HERE');
+					$this->loadTranslateForm($subform, $subform->getName(), $subform->getData());
+
+					$form->setFieldAttribute('options', 'formsource', $subform->getXml()->asXML());
+				}
 			}
 		}
 		catch (\Throwable $e)
@@ -140,7 +158,10 @@ class Translation extends CMSPlugin implements SubscriberInterface
 		{
 			$image = HTMLHelper::image('mod_languages/' . $language->image . '.gif', '', relative: true);
 
-			$title        = htmlspecialchars($language->title);
+			$code          = htmlspecialchars($language->lang_code);
+			$title         = htmlspecialchars($language->title);
+			$display_class = ($language->lang_code === $default) ? 'd-none hide' : '';
+
 			$title_image  = $title;
 			$image_render = '';
 			if ($image !== $empty_image)
@@ -149,9 +170,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 				$title_image  = htmlspecialchars($image . ' ' . $language->title);
 			}
 
-			$display_class = ($language->lang_code === $default) ? 'd-none hide' : '';
-
-			$xml = str_replace('{language_code}', $language->lang_code, $translateForm);
+			$xml = str_replace('{language_code}', $code, $translateForm);
 			$xml = str_replace('{language_title}', $title, $xml);
 			$xml = str_replace('{language_title_image}', $title_image, $xml);
 			$xml = str_replace('{language_image_render}', $image_render, $xml);
@@ -180,11 +199,9 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			return;
 		}
 
-		if ($context === 'com_radicalmart.category')
-		{
-			$this->addTranslationTab($tabs, $form);
-		}
-		elseif ($context === 'com_radicalmart.product')
+		$contexts = ['com_radicalmart.category', 'com_radicalmart.product', 'com_radicalmart.fieldset',
+			'com_radicalmart.field'];
+		if (in_array($context, $contexts))
 		{
 			$this->addTranslationTab($tabs, $form);
 		}
@@ -236,37 +253,71 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 */
 	public function onRadicalMartNormaliseRequestData(string $context, ?object $objData, ?Form $form): void
 	{
-		if ($context === 'com_radicalmart.category')
+		$contexts = ['com_radicalmart.category', 'com_radicalmart.product', 'com_radicalmart.fieldset', 'com_radicalmart.field'];
+		if (in_array($context, $contexts))
 		{
 			$this->setDefaultData($objData);
+		}
+
+		if ($context === 'com_radicalmart.field' && property_exists($objData, 'options'))
+		{
+			foreach ($objData->options as &$option_data)
+			{
+				$this->setDefaultData($option_data);
+			}
 		}
 	}
 
 	/**
 	 * Method to set data to default language.
 	 *
-	 * @param   object  $object  Reference to the form data object.
+	 * @param   object|array  $source  Reference to the form data object.
 	 *
 	 * @throws \Exception
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	protected function setDefaultData(object $object): void
+	protected function setDefaultData(object|array &$source): void
 	{
-		if (empty($object->plugins['translation']))
+		$array_access = (is_array($source) || $source instanceof \ArrayAccess);
+		$registry     = new Registry($source);
+		$default      = LanguagesHelper::getDefaultTag('site');
+		if ($array_access)
 		{
-			return;
+			if (empty($source['plugins']['translation']))
+			{
+				return;
+			}
+			if (!isset($source['plugins']['translation'][$default]))
+			{
+				return;
+			}
+
+			$fields = $source['plugins']['translation'][$default];
+		}
+		else
+		{
+			if (empty($source->plugins['translation']))
+			{
+				return;
+			}
+			if (!isset($source->plugins['translation'][$default]))
+			{
+				return;
+			}
+
+			$fields = $source->plugins['translation'][$default];
 		}
 
-		$default = LanguagesHelper::getDefaultTag('site');
-		if (!isset($object->plugins['translation'][$default]))
+		$result = $this->recursiveGetDefaultTranslationData($fields, $registry);
+		if ($array_access)
 		{
-			return;
+			$source['plugins']['translation'][$default] = $result;
 		}
-		$fields   = $object->plugins['translation'][$default];
-		$registry = new Registry($object);
-
-		$object->plugins['translation'][$default] = $this->recursiveGetDefaultTranslationData($fields, $registry);
+		else
+		{
+			$source->plugins['translation'][$default] = $result;
+		}
 	}
 
 	/**
@@ -288,11 +339,11 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			$path = (!empty($parent)) ? $parent . '.' . $key : $key;
 			if (is_array($datum))
 			{
-				$result[$path] = $this->recursiveGetDefaultTranslationData($datum, $registry, $path, $result);
+				$result[$key] = $this->recursiveGetDefaultTranslationData($datum, $registry, $path);
 			}
 			else
 			{
-				$result[$path] = $registry->get($path, '');
+				$result[$key] = $registry->get($path, '');
 			}
 		}
 
@@ -412,7 +463,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			return $source;
 		}
 
-		$is_array = (is_array($source) || $source instanceof \ArrayAccess);
+		$array_access = (is_array($source) || $source instanceof \ArrayAccess);
 		foreach ($translation as $key => $value)
 		{
 			if ($value === '' || $value === [])
@@ -421,11 +472,11 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			}
 
 			$current = null;
-			if ($is_array && isset($source[$key]))
+			if ($array_access && isset($source[$key]))
 			{
 				$current = $source[$key];
 			}
-			elseif (!$is_array && isset($source->{$key}))
+			elseif (!$array_access && isset($source->{$key}))
 			{
 				$current = $source->{$key};
 			}
@@ -436,7 +487,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 				continue;
 			}
 
-			if ($is_array)
+			if ($array_access)
 			{
 				$source[$key] = $current;
 			}

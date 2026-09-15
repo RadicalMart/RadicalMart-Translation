@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form addfieldprefix="Joomla\Component\RadicalMart\Administrator\Field">
+	<fields name="plugins">
+		<fields name="translation">
+			<field name="note" type="note"
+				   label="PLG_RADICALMART_TRANSLATION_TAB"/>
+			<fields name="{language_code}">
+				<field name="text" type="text"
+					   label="{language_title_image}"
+					   parentclass="{language_display_class}"/>
+			</fields>
+		</fields>
+	</fields>
+</form>
