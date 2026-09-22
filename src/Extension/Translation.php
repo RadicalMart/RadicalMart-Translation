@@ -56,10 +56,13 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			'onRadicalMartPrepareViewTabs'      => 'onRadicalMartPrepareViewTabs',
 			'onRadicalMartNormaliseRequestData' => 'onRadicalMartNormaliseRequestData',
 
-			'onRadicalMartGetItemCategory' => 'onRadicalMartGetItemCategory',
-			'onRadicalMartGetListCategory' => 'onRadicalMartGetListItem',
-			'onRadicalMartGetItemProduct'  => 'onRadicalMartGetItemProduct',
-			'onRadicalMartGetListProduct'  => 'onRadicalMartGetListItem',
+			'onRadicalMartGetItemCategory'            => 'onRadicalMartGetItemCategory',
+			'onRadicalMartGetListCategory'            => 'onRadicalMartGetListItem',
+			'onRadicalMartGetItemProduct'             => 'onRadicalMartGetItemProduct',
+			'onRadicalMartGetItemProductVariability'  => 'onRadicalMartGetItemProduct',
+			'onRadicalMartGetListProduct'             => 'onRadicalMartGetListItem',
+			'onRadicalMartGetListMeta'                => 'onRadicalMartGetListItem',
+			'onRadicalMartGetFilterCategoryFieldsets' => 'onRadicalMartGetFilterCategoryFieldsets',
 		];
 	}
 
@@ -78,8 +81,13 @@ class Translation extends CMSPlugin implements SubscriberInterface
 		try
 		{
 			$formName = $form->getName();
-			$forms    = ['com_radicalmart.category', 'com_radicalmart.product', 'com_radicalmart.fieldset',
-				'com_radicalmart.field'];
+			$forms    = [
+				'com_radicalmart.category',
+				'com_radicalmart.product',
+				'com_radicalmart.meta',
+				'com_radicalmart.fieldset',
+				'com_radicalmart.field'
+			];
 			if (in_array($formName, $forms))
 			{
 				$this->loadTranslateForm($form, $formName, $data);
@@ -199,8 +207,13 @@ class Translation extends CMSPlugin implements SubscriberInterface
 			return;
 		}
 
-		$contexts = ['com_radicalmart.category', 'com_radicalmart.product', 'com_radicalmart.fieldset',
-			'com_radicalmart.field'];
+		$contexts = [
+			'com_radicalmart.category',
+			'com_radicalmart.product',
+			'com_radicalmart.meta',
+			'com_radicalmart.fieldset',
+			'com_radicalmart.field',
+		];
 		if (in_array($context, $contexts))
 		{
 			$this->addTranslationTab($tabs, $form);
@@ -367,10 +380,10 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	}
 
 	/**
-	 * Method to set product item translation data.
+	 * Method to set product and product meta variability item translation data.
 	 *
 	 * @param   string       $context   Context selector string.
-	 * @param   object      &$data      Reference to the category item object.
+	 * @param   object      &$data      Reference to the product item object.
 	 * @param   array|bool   $currency  Currency data array, or false.
 	 *
 	 * @throws \Exception
@@ -383,7 +396,6 @@ class Translation extends CMSPlugin implements SubscriberInterface
 
 		if (!empty($data->fieldsets))
 		{
-			$current = $this->getApplication()->getLanguage()->getTag();
 			foreach ($data->fieldsets as $fieldset)
 			{
 				if (!empty($fieldset->is_translation))
@@ -400,26 +412,9 @@ class Translation extends CMSPlugin implements SubscriberInterface
 						break;
 					}
 
-					$this->translateItem($field, $field->plugins->get('translation', []));
-					if ($field->plugin === 'standard')
-					{
-						$type = $field->params->get('type');
-						if ($type === 'list' || $type === 'checkboxes')
-						{
-							if (!empty($field->options) && is_array($field->options)
-								&& !empty($field->options[$field->rawvalue]))
-							{
-								$text_value = (new Registry($field->options[$field->rawvalue]))
-									->get('plugins.translation.' . $current . '.text');
-								if (!empty($text_value))
-								{
-									$field->value = $text_value;
-								}
-							}
-						}
-					}
+					$this->translateField($field);
 
-					$data->filds[$filed_key] = $field;
+					$data->fields[$filed_key] = $field;
 				}
 			}
 		}
@@ -439,6 +434,85 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	public function onRadicalMartGetListItem(string $context, object $item, bool|array $currency): void
 	{
 		$this->translateItem($item, $item->plugins->get('translation', []));
+	}
+
+	/**
+	 * Trigger `onRadicalMartGetFilterCategoryFieldsets` event.
+	 *
+	 * @param   string       $context    Context selector string.
+	 * @param   array        $fieldsets  Modified categories fieldses definition objects.
+	 * @param   mixed        $data       Form data.
+	 * @param   object|bool  $category   Active category object, or null.
+	 * @param   array        $currency   Current currency data.
+	 *
+	 * @throws \Exception
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	public function onRadicalMartGetFilterCategoryFieldsets(string      $context, array $fieldsets, mixed $data,
+	                                                        object|bool $category, array $currency): void
+	{
+		foreach ($fieldsets as $fieldset)
+		{
+			if (!empty($fieldset->is_translation))
+			{
+				break;
+			}
+
+			$this->translateItem($fieldset, $fieldset->plugins->get('translation', []));
+
+			foreach ($fieldset->fields as $field)
+			{
+				if (!empty($field->is_translation))
+				{
+					break;
+				}
+
+				$this->translateField($field);
+			}
+		}
+	}
+
+	/**
+	 * Method to translate field object.
+	 *
+	 * @param   object  $field  Field object.
+	 *
+	 * @throws \Exception
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected function translateField(object $field): void
+	{
+		$current = $this->getApplication()->getLanguage()->getTag();
+		$this->translateItem($field, $field->plugins->get('translation', []));
+
+		if ($field->plugin === 'standard')
+		{
+			$type = $field->params->get('type');
+			if ($type === 'list' || $type === 'checkboxes')
+			{
+				if (empty($field->options))
+				{
+					return;
+				}
+
+				foreach ($field->options as &$option)
+				{
+					if (empty($option['plugins']['translation'][$current]['text']))
+					{
+						continue;
+					}
+
+					$option['text'] = $option['plugins']['translation'][$current]['text'];
+				}
+
+				if (!empty($field->value) && !empty($field->rawvalue) && !empty($field->options[$field->rawvalue]))
+				{
+					$field->value = $field->options[$field->rawvalue]['text'];
+				}
+			}
+		}
 	}
 
 	/**
