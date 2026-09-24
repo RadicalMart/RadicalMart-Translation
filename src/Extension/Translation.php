@@ -497,6 +497,14 @@ class Translation extends CMSPlugin implements SubscriberInterface
 					return;
 				}
 
+				$values = [];
+				if (!empty($field->rawvalue) && !empty($field->value)
+					&& $field->params->get('display_product_as') === 'string')
+				{
+					$values = (!is_array($field->rawvalue)) ? [$field->rawvalue] : $field->rawvalue;
+				}
+
+				$selected = [];
 				foreach ($field->options as &$option)
 				{
 					if (empty($option['plugins']['translation'][$current]['text']))
@@ -505,11 +513,15 @@ class Translation extends CMSPlugin implements SubscriberInterface
 					}
 
 					$option['text'] = $option['plugins']['translation'][$current]['text'];
+					if (in_array($option['value'], $values))
+					{
+						$selected[] = $option['text'];
+					}
 				}
 
-				if (!empty($field->value) && !empty($field->rawvalue) && !empty($field->options[$field->rawvalue]))
+				if (!empty($selected))
 				{
-					$field->value = $field->options[$field->rawvalue]['text'];
+					$field->value = implode(', ', $selected);
 				}
 			}
 		}
