@@ -25,6 +25,16 @@
 						   rows="15"
 						   syntax="php"
 						   buttons="true"/>
+					<fields name="params">
+						<field name="seo_product_title" type="text"
+							   label="COM_RADICALMART_PARAMS_SEO_TITLE"/>
+						<field name="seo_product_description" type="textarea"
+							   label="COM_RADICALMART_PARAMS_SEO_DESCRIPTION"
+							   rows="3"
+							   cols="30"/>
+						<field name="seo_product_h1" type="text"
+							   label="COM_RADICALMART_PARAMS_SEO_H1"/>
+					</fields>
 				</fields>
 			</fields>
 		</fields>
