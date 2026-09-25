@@ -31,6 +31,8 @@
 							   label="COM_RADICALMART_PARAMS_SEO_DESCRIPTION"
 							   rows="3"
 							   cols="30"/>
+						<field name="seo_category_breadcrumbs" type="text"
+							   label="COM_RADICALMART_PARAMS_SEO_BREADCRUMBS"/>
 						<field name="seo_category_h1" type="text"
 							   label="COM_RADICALMART_PARAMS_SEO_H1"/>
 					</fields>

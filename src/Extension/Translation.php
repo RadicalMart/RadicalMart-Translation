@@ -418,6 +418,18 @@ class Translation extends CMSPlugin implements SubscriberInterface
 				}
 			}
 		}
+		elseif (!empty($data->fields))
+		{
+			foreach ($data->fields as $field)
+			{
+				if (!empty($field->is_translation))
+				{
+					break;
+				}
+
+				$this->translateField($field);
+			}
+		}
 	}
 
 	/**
