@@ -2,7 +2,7 @@
 /*
  * @package     RadicalMart Package
  * @subpackage  plg_system_radicalmart
- * @version     __DEPLOY_VERSION__
+ * @version     1.0.0
  * @author      RadicalMart Team - radicalmart.ru
  * @copyright   Copyright (c) 2026 RadicalMart. All rights reserved.
  * @license     GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
@@ -38,7 +38,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @var    bool
 	 *
-	 * @since  __DEPLOY_VERSION__
+	 * @since  1.0.0
 	 */
 	protected $autoloadLanguage = true;
 
@@ -47,7 +47,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @return  array
 	 *
-	 * @since  __DEPLOY_VERSION__
+	 * @since  1.0.0
 	 */
 	public static function getSubscribedEvents(): array
 	{
@@ -74,7 +74,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @throws \Exception
 	 *
-	 * @since  __DEPLOY_VERSION__
+	 * @since  1.0.0
 	 */
 	public function onRadicalMartPrepareForm(Form $form, mixed $data): void
 	{
@@ -128,7 +128,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @throws \Exception
 	 *
-	 * @since  __DEPLOY_VERSION__
+	 * @since  1.0.0
 	 */
 	protected function loadTranslateForm(Form $form, string $name, mixed $data = []): void
 	{
@@ -196,7 +196,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @throws \Exception
 	 *
-	 * @since __DEPLOY_VERSION__
+	 * @since 1.0.0
 	 */
 	public function onRadicalMartPrepareViewTabs(array &$tabs, FormView $view): void
 	{
@@ -226,7 +226,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 * @param   array  $tabs  Current tabs array.
 	 * @param   Form   $form  Current form object.
 	 *
-	 * @since __DEPLOY_VERSION__
+	 * @since 1.0.0
 	 */
 	protected function addTranslationTab(array &$tabs, Form $form): void
 	{
@@ -262,7 +262,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 * @param   Form|null     $form     The form object, if available.
 	 *
 	 * @throws \Exception
-	 * @since  __DEPLOY_VERSION__
+	 * @since  1.0.0
 	 */
 	public function onRadicalMartNormaliseRequestData(string $context, ?object $objData, ?Form $form): void
 	{
@@ -288,7 +288,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @throws \Exception
 	 *
-	 * @since  __DEPLOY_VERSION__
+	 * @since  1.0.0
 	 */
 	protected function setDefaultData(object|array &$source): void
 	{
@@ -341,9 +341,9 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 * @param   string    $parent    Parent key for path.
 	 * @param   array     $result    Reu
 	 *
-	 * @return array __DEPLOY_VERSION__
+	 * @return array 1.0.0
 	 *
-	 * @since __DEPLOY_VERSION__
+	 * @since 1.0.0
 	 */
 	protected function recursiveGetDefaultTranslationData(array $fields, Registry $registry, string $parent = '', array $result = []): array
 	{
@@ -372,7 +372,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @throws \Exception
 	 *
-	 * @since __DEPLOY_VERSION__
+	 * @since 1.0.0
 	 */
 	public function onRadicalMartGetItemCategory(string $context, object $data, bool|array $currency): void
 	{
@@ -388,7 +388,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @throws \Exception
 	 *
-	 * @since __DEPLOY_VERSION__
+	 * @since 1.0.0
 	 */
 	public function onRadicalMartGetItemProduct(string $context, object $data, bool|array $currency): void
 	{
@@ -441,7 +441,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @throws \Exception
 	 *
-	 * @since __DEPLOY_VERSION__
+	 * @since 1.0.0
 	 */
 	public function onRadicalMartGetListItem(string $context, object $item, bool|array $currency): void
 	{
@@ -459,7 +459,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @throws \Exception
 	 *
-	 * @since __DEPLOY_VERSION__
+	 * @since 1.0.0
 	 */
 	public function onRadicalMartGetFilterCategoryFieldsets(string      $context, array $fieldsets, mixed $data,
 	                                                        object|bool $category, array $currency): void
@@ -492,7 +492,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @throws \Exception
 	 *
-	 * @since __DEPLOY_VERSION__
+	 * @since 1.0.0
 	 */
 	protected function translateField(object $field): void
 	{
@@ -547,7 +547,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @throws \Exception
 	 *
-	 * @since __DEPLOY_VERSION__
+	 * @since 1.0.0
 	 */
 	protected function translateItem(object|array &$source, mixed $translation = []): void
 	{
@@ -597,7 +597,7 @@ class Translation extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @return mixed Changed data.
 	 *
-	 * @since  __DEPLOY_VERSION__
+	 * @since  1.0.0
 	 */
 	protected function recursiveSetItemValue(mixed $source, mixed $translation): mixed
 	{
