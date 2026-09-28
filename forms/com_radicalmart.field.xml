@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form addfieldprefix="Joomla\Component\RadicalMart\Administrator\Field">
+	<fieldset name="translation_{language_code}" tab="translation"
+			  label="{language_title_image}"
+			  class="{language_display_class}"
+			  full_width="true">
+		<fields name="plugins">
+			<fields name="translation">
+				<fields name="{language_code}">
+					<field name="title" type="text"
+						   label="JGLOBAL_TITLE"
+						   description="JFIELD_TITLE_DESC"
+						   size="40"/>
+					<field name="description" type="textarea"
+						   label="JGLOBAL_DESCRIPTION"
+						   filter="\Joomla\CMS\Component\ComponentHelper::filterText"
+						   rows="3"/>
+				</fields>
+			</fields>
+		</fields>
+	</fieldset>
+</form>

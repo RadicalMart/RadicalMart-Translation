@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="radicalmart" method="upgrade">
+	<name>PLG_RADICALMART_TRANSLATION</name>
+	<author>RadicalMart Team</author>
+	<creationDate>September 2026</creationDate>
+	<copyright>Copyright © 2026 RadicalMart. All rights reserved.</copyright>
+	<license>https://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<authorEmail>info@radicalmart.ru</authorEmail>
+	<authorUrl>https://radicalmart.ru/</authorUrl>
+	<version>1.0.0</version>
+	<description>PLG_RADICALMART_TRANSLATION_DESCRIPTION</description>
+	<namespace path="src">Joomla\Plugin\RadicalMart\Translation</namespace>
+	<scriptfile>script.php</scriptfile>
+	<languages folder="language">
+		<language tag="en-GB">en-GB/plg_radicalmart_translation.ini</language>
+		<language tag="en-GB">en-GB/plg_radicalmart_translation.sys.ini</language>
+		<language tag="ru-RU">ru-RU/plg_radicalmart_translation.ini</language>
+		<language tag="ru-RU">ru-RU/plg_radicalmart_translation.sys.ini</language>
+	</languages>
+	<files>
+		<folder>forms</folder>
+		<folder>services</folder>
+		<folder plugin="translation">src</folder>
+	</files>
+	<updateservers>
+		<server type="extension" priority="1" name="RadicalMart - Translation">
+			https://sovmart.ru/update?element=plg_radicalmart_translation
+		</server>
+	</updateservers>
+</extension>
